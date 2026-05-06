@@ -44,6 +44,35 @@ jobs:
         working-directory: packaging
         run: pyinstaller --noconfirm pyinstaller.spec
 
+      - name: Smoke test EXE
+        working-directory: packaging
+        shell: pwsh
+        run: |
+          Write-Host "Starting EXE for smoke test..."
+          $proc = Start-Process -FilePath "dist\GeneratorIdentyfikatorow.exe" -PassThru
+          Write-Host "EXE started, PID: $($proc.Id)"
+          Start-Sleep -Seconds 10
+          $maxAttempts = 15
+          $success = $false
+          for ($i = 0; $i -lt $maxAttempts; $i++) {
+            try {
+              $response = Invoke-WebRequest -Uri "http://127.0.0.1:8000" -UseBasicParsing -TimeoutSec 3
+              if ($response.StatusCode -eq 200) {
+                Write-Host "Smoke test PASSED: HTTP 200 from server"
+                $success = $true
+                break
+              }
+            } catch {
+              Write-Host "Attempt $($i+1)/$maxAttempts - waiting..."
+              Start-Sleep -Seconds 2
+            }
+          }
+          Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+          if (-not $success) {
+            Write-Host "Smoke test FAILED: server did not respond"
+            exit 1
+          }
+
       - name: Upload EXE as artifact
         uses: actions/upload-artifact@v4
         with:
