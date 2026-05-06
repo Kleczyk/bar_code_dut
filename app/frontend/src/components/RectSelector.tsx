@@ -62,6 +62,7 @@ export function RectSelector({ src, rects, activeField, onRectChange, onImageLoa
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (!activeField || !imgRef.current || !naturalSize) return
+      e.preventDefault()
       const imgRect = imgRef.current.getBoundingClientRect()
       const actualRect = getActualImageRect(imgRect, naturalSize.w, naturalSize.h)
       const { x, y } = toImageCoords(e.clientX, e.clientY, actualRect, naturalSize.w, naturalSize.h)
@@ -141,6 +142,7 @@ export function RectSelector({ src, rects, activeField, onRectChange, onImageLoa
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onDragStart={(e) => e.preventDefault()}
     >
       <img
         ref={imgRef}
