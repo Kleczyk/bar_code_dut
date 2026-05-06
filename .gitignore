@@ -1,0 +1,19 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# PyInstaller
+packaging/build/
+packaging/dist/
+packaging/release/
+*.spec.bak
+
+# LibreOffice lock files
+.~lock.*#

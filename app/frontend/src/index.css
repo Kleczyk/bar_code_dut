@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'JetBrains Mono', 'SF Mono', monospace;
+  --color-void: #0a0a0f;
+  --color-surface: #12121a;
+  --color-surface-elevated: #1a1a25;
+  --color-border: #2a2a3a;
+  --color-cyan: #00f5ff;
+  --color-cyan-dim: #00b8c4;
+  --color-magenta: #ff00aa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  background: #0a0a0f;
+  color: #e0e0e8;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.bg-grid {
+  background-image: 
+    linear-gradient(rgba(0, 245, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
