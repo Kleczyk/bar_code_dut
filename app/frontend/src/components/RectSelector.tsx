@@ -84,8 +84,12 @@ export function RectSelector({ src, rects, activeField, onRectChange, onImageLoa
     [drawing, naturalSize]
   )
 
-  const handleMouseUp = useCallback(() => {
-    if (!drawing || !currentEnd || !activeField) return
+  const finishDrawing = useCallback(() => {
+    if (!drawing || !currentEnd || !activeField) {
+      setDrawing(null)
+      setCurrentEnd(null)
+      return
+    }
     const x = Math.min(drawing.startX, currentEnd.x)
     const y = Math.min(drawing.startY, currentEnd.y)
     const width = Math.abs(currentEnd.x - drawing.startX)
@@ -97,11 +101,12 @@ export function RectSelector({ src, rects, activeField, onRectChange, onImageLoa
     setCurrentEnd(null)
   }, [drawing, currentEnd, activeField, onRectChange])
 
+  const handleMouseUp = finishDrawing
+
   useEffect(() => {
-    const onUp = () => setDrawing(null)
-    window.addEventListener('mouseup', onUp)
-    return () => window.removeEventListener('mouseup', onUp)
-  }, [])
+    window.addEventListener('mouseup', finishDrawing)
+    return () => window.removeEventListener('mouseup', finishDrawing)
+  }, [finishDrawing])
 
   const toDisplayRect = (r: Rect): Rect => {
     if (!imgRef.current || !naturalSize) return r

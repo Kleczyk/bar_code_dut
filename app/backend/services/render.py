@@ -3,6 +3,8 @@ Badge rendering: load template, overlay text/barcode, arrange in grid.
 """
 import io
 import json
+import logging
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -11,6 +13,8 @@ import barcode
 from barcode.writer import ImageWriter
 import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
+
+logger = logging.getLogger(__name__)
 
 try:
     import cairosvg
@@ -41,23 +45,70 @@ def _generate_barcode(value: str, width: float = 2, height: float = 60) -> Image
     return img
 
 
-def _get_font(size: int = 24):
-    font_paths = []
+_font_cache: dict[tuple[str, int], ImageFont.FreeTypeFont] = {}
+
+
+def _find_font_path() -> Path | None:
+    """Find a usable TrueType font file, cached after first success."""
+    candidates: list[Path] = []
+
     if getattr(sys, "frozen", False):
-        font_paths.append(Path(sys._MEIPASS) / "fonts" / "DejaVuSans-Bold.ttf")
+        candidates.append(Path(sys._MEIPASS) / "fonts" / "DejaVuSans-Bold.ttf")
+
     base = Path(__file__).resolve().parent.parent.parent
-    font_paths.extend([
+    candidates.extend([
         base / "fonts" / "DejaVuSans-Bold.ttf",
         base / "packaging" / "fonts" / "DejaVuSans-Bold.ttf",
         Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
     ])
-    for p in font_paths:
+
+    if sys.platform == "win32":
+        winfonts = Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts"
+        candidates.extend([
+            winfonts / "DejaVuSans-Bold.ttf",
+            winfonts / "arialbd.ttf",
+            winfonts / "arial.ttf",
+            winfonts / "calibri.ttf",
+            winfonts / "segoeui.ttf",
+            winfonts / "tahoma.ttf",
+        ])
+
+    for p in candidates:
         if p.exists():
-            try:
-                return ImageFont.truetype(str(p), size)
-            except OSError:
-                continue
-    return ImageFont.load_default()
+            logger.info("Font found: %s", p)
+            return p
+        logger.debug("Font not found: %s", p)
+
+    return None
+
+
+_resolved_font_path: Path | None | bool = False
+
+
+def _get_font(size: int = 24) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    global _resolved_font_path
+    if _resolved_font_path is False:
+        _resolved_font_path = _find_font_path()
+        if _resolved_font_path is None:
+            logger.warning(
+                "No TrueType font found! Text will render with tiny default bitmap font. "
+                "Ensure DejaVuSans-Bold.ttf is bundled or a Windows system font is available."
+            )
+
+    if _resolved_font_path is None:
+        return ImageFont.load_default()
+
+    cache_key = (str(_resolved_font_path), size)
+    if cache_key in _font_cache:
+        return _font_cache[cache_key]
+
+    try:
+        font = ImageFont.truetype(str(_resolved_font_path), size)
+        _font_cache[cache_key] = font
+        return font
+    except OSError:
+        logger.error("Failed to load font %s at size %d", _resolved_font_path, size)
+        return ImageFont.load_default()
 
 
 class BadgeRenderer:
