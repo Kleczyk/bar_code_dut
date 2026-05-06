@@ -49,11 +49,19 @@ _font_cache: dict[tuple[str, int], ImageFont.FreeTypeFont] = {}
 
 
 def _find_font_path() -> Path | None:
-    """Find a usable TrueType font file, cached after first success."""
+    """Find a usable TrueType font file. Prints to stdout so it's visible
+    in the EXE console window regardless of log level."""
     candidates: list[Path] = []
 
     if getattr(sys, "frozen", False):
-        candidates.append(Path(sys._MEIPASS) / "fonts" / "DejaVuSans-Bold.ttf")
+        meipass = Path(sys._MEIPASS)
+        candidates.append(meipass / "fonts" / "DejaVuSans-Bold.ttf")
+        print(f"[font] PyInstaller _MEIPASS: {meipass}", flush=True)
+        fonts_dir = meipass / "fonts"
+        if fonts_dir.is_dir():
+            print(f"[font] fonts/ dir contents: {list(fonts_dir.iterdir())}", flush=True)
+        else:
+            print(f"[font] WARNING: fonts/ dir not found in _MEIPASS!", flush=True)
 
     base = Path(__file__).resolve().parent.parent.parent
     candidates.extend([
@@ -74,10 +82,17 @@ def _find_font_path() -> Path | None:
         ])
 
     for p in candidates:
-        if p.exists():
-            logger.info("Font found: %s", p)
-            return p
-        logger.debug("Font not found: %s", p)
+        exists = p.exists()
+        print(f"[font] {'OK' if exists else '--'} {p}", flush=True)
+        if exists:
+            try:
+                test_font = ImageFont.truetype(str(p), 24)
+                if test_font:
+                    print(f"[font] USING: {p}", flush=True)
+                    return p
+            except OSError as e:
+                print(f"[font] LOAD FAILED: {p} -> {e}", flush=True)
+                continue
 
     return None
 
@@ -90,9 +105,10 @@ def _get_font(size: int = 24) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     if _resolved_font_path is False:
         _resolved_font_path = _find_font_path()
         if _resolved_font_path is None:
-            logger.warning(
-                "No TrueType font found! Text will render with tiny default bitmap font. "
-                "Ensure DejaVuSans-Bold.ttf is bundled or a Windows system font is available."
+            print(
+                "[font] CRITICAL: No TrueType font found! "
+                "Text will render with tiny default bitmap font.",
+                flush=True,
             )
 
     if _resolved_font_path is None:
@@ -107,7 +123,7 @@ def _get_font(size: int = 24) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
         _font_cache[cache_key] = font
         return font
     except OSError:
-        logger.error("Failed to load font %s at size %d", _resolved_font_path, size)
+        print(f"[font] ERROR: Failed to load {_resolved_font_path} at size {size}", flush=True)
         return ImageFont.load_default()
 
 

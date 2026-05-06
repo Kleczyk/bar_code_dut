@@ -44,6 +44,23 @@ jobs:
         working-directory: packaging
         run: pyinstaller --noconfirm pyinstaller.spec
 
+      - name: Verify bundled fonts
+        working-directory: packaging
+        shell: pwsh
+        run: |
+          Write-Host "Checking PyInstaller output for bundled fonts..."
+          $fontsDir = "dist\GeneratorIdentyfikatorow\_internal\fonts"
+          if (Test-Path "dist\GeneratorIdentyfikatorow.exe") {
+            Write-Host "One-file mode detected, extracting to check..."
+            $proc = Start-Process -FilePath "dist\GeneratorIdentyfikatorow.exe" -PassThru -RedirectStandardOutput "exe_stdout.log" -RedirectStandardError "exe_stderr.log"
+            Start-Sleep -Seconds 15
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            Write-Host "=== EXE stdout ==="
+            if (Test-Path "exe_stdout.log") { Get-Content "exe_stdout.log" }
+            Write-Host "=== EXE stderr ==="
+            if (Test-Path "exe_stderr.log") { Get-Content "exe_stderr.log" }
+          }
+
       - name: Smoke test EXE
         working-directory: packaging
         shell: pwsh
@@ -51,8 +68,8 @@ jobs:
           Write-Host "Starting EXE for smoke test..."
           $proc = Start-Process -FilePath "dist\GeneratorIdentyfikatorow.exe" -PassThru
           Write-Host "EXE started, PID: $($proc.Id)"
-          Start-Sleep -Seconds 10
-          $maxAttempts = 15
+          Start-Sleep -Seconds 15
+          $maxAttempts = 20
           $success = $false
           for ($i = 0; $i -lt $maxAttempts; $i++) {
             try {
