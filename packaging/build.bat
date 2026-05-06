@@ -110,6 +110,7 @@ if exist "dist\GeneratorIdentyfikatorow.exe" (
     pause
     exit /b 1
 )
+copy /y "odinstaluj.bat" "release\odinstaluj.bat" >nul
 
 echo.
 echo ============================================
@@ -117,9 +118,11 @@ echo  GOTOWE!
 echo ============================================
 echo.
 echo  EXE: %cd%\release\GeneratorIdentyfikatorow.exe
+echo  Odinstalowanie: %cd%\release\odinstaluj.bat
 echo.
-echo  Skopiuj ten plik na pendrive i uruchom
-echo  na dowolnym komputerze z Windows.
+echo  Skopiuj OBA pliki na pendrive:
+echo    - GeneratorIdentyfikatorow.exe
+echo    - odinstaluj.bat
 echo.
 echo  Rozmiar:
 for %%A in ("release\GeneratorIdentyfikatorow.exe") do echo   %%~zA bajtow (%%~zA bytes)

@@ -74,13 +74,20 @@ else
     exit 1
 fi
 
+cp odinstaluj.bat "release/odinstaluj.bat" 2>/dev/null || true
+
 echo ""
 echo "============================================"
 echo " GOTOWE!"
 echo "============================================"
 echo ""
 echo "  Plik: $(pwd)/${RESULT}"
+echo "  Odinstalowanie: $(pwd)/release/odinstaluj.bat"
 echo "  Rozmiar: $(du -h "${RESULT}" | cut -f1)"
+echo ""
+echo "  Skopiuj OBA pliki na pendrive:"
+echo "    - ${RESULT##*/}"
+echo "    - odinstaluj.bat"
 echo ""
 
 if [[ "$(uname -s)" != *MINGW* ]] && [[ "$(uname -s)" != *CYGWIN* ]] && [[ "$(uname -s)" != *MSYS* ]]; then

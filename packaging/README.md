@@ -71,6 +71,22 @@ Gotowy EXE pojawi się jako artefakt do pobrania.
 4. Na Windows pokazuje okno informacyjne o starcie.
 5. Zamknięcie okna konsoli lub Ctrl+C zatrzymuje aplikację.
 
+## Odinstalowanie
+
+Aplikacja nie tworzy wpisów w rejestrze ani nie instaluje się w systemie. Aby ją usunąć:
+
+1. Uruchom `odinstaluj.bat` (znajduje się obok EXE lub w katalogu `packaging/`).
+2. Skrypt usunie:
+   - Pliki tymczasowe PyInstaller (`_MEI...` w `%TEMP%`)
+   - Pliki tymczasowe aplikacji (`tmp*.png/jpg/svg` w `%TEMP%`)
+   - Plik `GeneratorIdentyfikatorow.exe`
+   - Sam siebie
+3. Dane w przeglądarce (zapisane projekty w localStorage) trzeba usunąć ręcznie:
+   - Otwórz przeglądarkę, wejdź na `http://127.0.0.1:8000`
+   - `F12` → Application → Local Storage → Clear
+
+Alternatywnie: po prostu usuń plik `GeneratorIdentyfikatorow.exe` -- to wystarczy w większości przypadków.
+
 ## Ograniczenia wersji EXE
 
 - **SVG**: format SVG nie jest obsługiwany (brak biblioteki Cairo). Użyj PNG lub JPG jako wzoru.
@@ -88,6 +104,7 @@ packaging/
 ├── requirements.txt    # Zależności Pythona
 ├── icon.ico            # Ikona aplikacji
 ├── fonts/              # Czcionka DejaVu (dla Pillow)
+├── odinstaluj.bat      # Skrypt odinstalowania (czyści ślady)
 ├── run.bat             # Uruchamianie zbudowanego EXE
 ├── release/            # Folder z wynikowym EXE (po build)
 └── README.md
