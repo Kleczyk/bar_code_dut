@@ -28,7 +28,7 @@ function rectToLayoutUpdate(key: keyof Layout, rect: Rect): Partial<Layout[keyof
   if (key === 'barcode') {
     return { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
   }
-  const font_size = Math.max(8, Math.round(rect.height * 0.8))
+  const font_size = Math.round(rect.height * 0.8)
   return { x: rect.x, y: rect.y, font_size, width: rect.width, height: rect.height }
 }
 
@@ -57,7 +57,7 @@ export function LayoutEditor({ templatePreview, layout, onLayoutChange }: Props)
       if (key === 'barcode') return
       onLayoutChange({
         ...layout,
-        [key]: { ...layout[key], font_size: Math.max(8, Math.min(120, font_size)) },
+        [key]: { ...layout[key], font_size: Math.max(1, font_size) },
       })
     },
     [layout, onLayoutChange]
@@ -102,8 +102,7 @@ export function LayoutEditor({ templatePreview, layout, onLayoutChange }: Props)
                 <span className="text-xs text-zinc-400 w-20 truncate">{key}</span>
                 <input
                   type="number"
-                  min={8}
-                  max={120}
+                  min={1}
                   value={layout[key].font_size}
                   onChange={(e) => handleFontSizeChange(key, +e.target.value)}
                   className="w-16 px-2 py-1 rounded bg-black/30 border border-white/10 text-sm text-white focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 outline-none"
